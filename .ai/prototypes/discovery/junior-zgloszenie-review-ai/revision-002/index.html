@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review-first Mentoring — prototyp: zgłoszenie i review AI (junior)</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.5; color: #111; background: #f4f4f4; }
+  a { color: #111; }
+  :focus-visible { outline: 3px solid #000; outline-offset: 2px; }
+  .proto-bar { background: #222; color: #fff; padding: .5rem 1rem; font-size: .875rem; display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: center; justify-content: space-between; }
+  .proto-bar button { background: #fff; color: #111; }
+  .proto-bar :focus-visible { outline-color: #fff; }
+  header.app { background: #fff; border-bottom: 1px solid #999; padding: .75rem 1rem; }
+  header.app .row { max-width: 40rem; margin: 0 auto; display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: baseline; justify-content: space-between; }
+  header.app .brand { font-weight: 700; }
+  header.app nav a[aria-current="page"] { font-weight: 700; }
+  .role { font-size: .875rem; color: #444; }
+  main { max-width: 40rem; margin: 0 auto; padding: 1rem; }
+  h1 { font-size: 1.5rem; margin: .5rem 0 1rem; }
+  h2 { font-size: 1.125rem; margin: 1.25rem 0 .5rem; }
+  h1:focus, h2:focus { outline: none; }
+  h1:focus-visible { outline: 3px solid #000; }
+  button, .btn { font: inherit; min-height: 44px; padding: .5rem 1rem; border: 2px solid #111; border-radius: 4px; background: #fff; color: #111; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+  .btn-primary { background: #111; color: #fff; font-weight: 700; }
+  button[disabled] { opacity: .6; cursor: not-allowed; }
+  .linklike { border: 0; background: none; padding: 0; min-height: 0; text-decoration: underline; font-weight: 400; }
+  .card { background: #fff; border: 1px solid #999; border-radius: 6px; padding: .75rem 1rem; margin: 0 0 .75rem; }
+  .card-link { display: block; text-decoration: none; }
+  .card-link:hover { border-color: #111; }
+  .meta { font-size: .875rem; color: #333; }
+  .badge { display: inline-block; border: 1px solid #111; border-radius: 999px; padding: 0 .5rem; font-size: .8125rem; font-weight: 600; background: #fff; white-space: nowrap; }
+  .badge-strong { background: #111; color: #fff; }
+  .banner { border: 2px solid #111; border-radius: 6px; background: #fff; padding: .75rem 1rem; margin: 0 0 1rem; }
+  .banner-error { border-style: dashed; }
+  .sticky { position: sticky; top: 0; background: #f4f4f4; padding: .5rem 0; border-bottom: 1px solid #ccc; margin-bottom: 1rem; z-index: 1; }
+  .sticky p { margin: 0 0 .25rem; font-weight: 600; }
+  .skeleton { height: 4.5rem; background: repeating-linear-gradient(90deg, #ddd 0 40%, #e9e9e9 40% 100%); border-radius: 6px; margin-bottom: .75rem; }
+  .tabs { display: flex; gap: 0; margin: 0 0 1rem; }
+  .tabs button { flex: 1; border-radius: 0; }
+  .tabs button[aria-selected="true"] { background: #111; color: #fff; font-weight: 700; }
+  .field { margin: 0 0 1rem; }
+  .field label { display: block; font-weight: 600; margin-bottom: .25rem; }
+  .hint { font-size: .875rem; color: #444; margin: .25rem 0 0; }
+  input[type="url"], input[type="text"], textarea, select { font: inherit; width: 100%; padding: .5rem; border: 1px solid #555; border-radius: 4px; background: #fff; color: #111; min-height: 44px; }
+  textarea { min-height: 8rem; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .875rem; }
+  [aria-invalid="true"] { border: 2px solid #000; }
+  .error { font-weight: 700; margin: .25rem 0 0; }
+  .error::before { content: "⚠ "; }
+  pre.code { margin: .5rem 0 0; padding: .5rem; background: #f0f0f0; border: 1px solid #ccc; overflow-x: auto; font-size: .8125rem; line-height: 1.4; }
+  pre.code .hl { font-weight: 700; background: #d8d8d8; display: block; }
+  .why-label { font-weight: 700; }
+  .origin { font-size: .8125rem; font-weight: 700; text-transform: none; border-left: 4px solid #111; padding-left: .5rem; margin-bottom: .25rem; }
+  details > summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; }
+  dialog { border: 2px solid #111; border-radius: 6px; max-width: 30rem; width: calc(100% - 2rem); }
+  dialog::backdrop { background: rgba(0,0,0,.4); }
+  .actions { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0; }
+  .test-panel { max-width: 40rem; margin: 2rem auto; padding: 1rem; border: 2px dashed #666; background: #fafafa; }
+  .test-panel h2 { margin-top: 0; }
+  .test-panel ul { padding-left: 1.25rem; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+</style>
+</head>
+<body>
+<div class="proto-bar" role="note">
+  <span><strong>Prototyp discovery.</strong> Dane symulowane, nic nie jest wysyłane.</span>
+  <button type="button" id="reset">Reset symulacji</button>
+</div>
+
+<header class="app">
+  <div class="row">
+    <span class="brand">Review-first Mentoring</span>
+    <nav aria-label="Nawigacja juniora"><a href="#j1" id="nav-j1">Moje zgłoszenia</a></nav>
+    <span class="role">Rola: Junior · widok mentora poza tym prototypem</span>
+  </div>
+</header>
+
+<div id="announce" class="sr-only" aria-live="polite" role="status"></div>
+
+<main>
+  <!-- J1 — Moje zgłoszenia -->
+  <section id="j1" data-screen hidden aria-labelledby="j1-h">
+    <h1 id="j1-h" tabindex="-1">Moje zgłoszenia</h1>
+    <p><a class="btn btn-primary" href="#j2">Nowe zgłoszenie</a></p>
+    <div id="j1-body"></div>
+  </section>
+
+  <!-- J2 — Nowe zgłoszenie -->
+  <section id="j2" data-screen hidden aria-labelledby="j2-h">
+    <p><a href="#j1">← Moje zgłoszenia</a></p>
+    <h1 id="j2-h" tabindex="-1">Nowe zgłoszenie</h1>
+    <form id="j2-form" novalidate>
+      <div class="tabs" role="tablist" aria-label="Źródło kodu">
+        <button type="button" role="tab" id="tab-pr" aria-controls="panel-pr" aria-selected="true">Link do PR</button>
+        <button type="button" role="tab" id="tab-frag" aria-controls="panel-frag" aria-selected="false" tabindex="-1">Fragment kodu</button>
+      </div>
+      <div id="panel-pr" role="tabpanel" aria-labelledby="tab-pr">
+        <div class="field">
+          <label for="pr-url">Link do pull requesta na GitHubie</label>
+          <input type="url" id="pr-url" name="pr-url" inputmode="url" autocomplete="off" aria-describedby="pr-url-err">
+          <div id="pr-url-err"></div>
+        </div>
+      </div>
+      <div id="panel-frag" role="tabpanel" aria-labelledby="tab-frag" hidden>
+        <div class="field">
+          <label for="frag">Fragment kodu</label>
+          <textarea id="frag" name="frag" spellcheck="false" aria-describedby="frag-hint frag-err"></textarea>
+          <p class="hint" id="frag-hint">Limit: 400 linii.</p>
+          <div id="frag-err"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label for="goal">Co chcesz osiągnąć?</label>
+        <textarea id="goal" name="goal" rows="3" style="font-family:inherit;font-size:1rem;min-height:5rem" aria-describedby="goal-hint goal-err"></textarea>
+        <p class="hint" id="goal-hint">Np. dodaję logowanie przez e-mail i nie wiem, czy dobrze obsługuję błędy</p>
+        <div id="goal-err"></div>
+      </div>
+      <button type="submit" class="btn-primary" id="submit">Wyślij do review</button>
+    </form>
+  </section>
+
+  <!-- J3 — Review -->
+  <section id="j3" data-screen hidden aria-labelledby="j3-h">
+    <p><a href="#j1">← Moje zgłoszenia</a></p>
+    <h1 id="j3-h" tabindex="-1">Review</h1>
+    <div id="j3-body"></div>
+  </section>
+
+  <!-- Nieznany ekran -->
+  <section id="unknown" data-screen hidden aria-labelledby="unknown-h">
+    <h1 id="unknown-h" tabindex="-1">Nie ma takiego ekranu</h1>
+    <p>Ten adres nie prowadzi do żadnego ekranu prototypu albo zgłoszenia.</p>
+    <p><a class="btn" href="#j1">Wróć do moich zgłoszeń</a></p>
+  </section>
+</main>
+
+<dialog id="ask-dialog" aria-labelledby="ask-h">
+  <h2 id="ask-h">Poprosić mentora?</h2>
+  <p>Mentor sprawdzi to review. Uwagi mogą się zmienić.</p>
+  <div class="actions">
+    <button type="button" class="btn-primary" id="ask-confirm">Poproś mentora</button>
+    <button type="button" id="ask-cancel">Anuluj</button>
+  </div>
+</dialog>
+
+<aside class="test-panel" aria-labelledby="test-h">
+  <h2 id="test-h">Stan testowy (poza produktem)</h2>
+  <p class="meta">Sterowanie symulacją. Junior tego nie widzi. W produkcie te wyniki daje serwer, model i reguły R09, R10, R16.</p>
+  <div class="field">
+    <label for="t-server">Odpowiedź serwera na link do PR</label>
+    <select id="t-server">
+      <option value="ok">PR publiczny, diff w limicie</option>
+      <option value="private">Prywatny lub nieistniejący PR (404)</option>
+      <option value="too-large">Za duży diff (1 240 linii)</option>
+      <option value="no-text">PR bez zmian w plikach tekstowych</option>
+    </select>
+  </div>
+  <div class="field">
+    <label for="t-model">Wywołanie modelu</label>
+    <select id="t-model">
+      <option value="ok">Udane za pierwszym razem</option>
+      <option value="retry-ok">Pierwsza próba: timeout, ponowienie udane</option>
+      <option value="timeout">Timeout w obu próbach</option>
+      <option value="invalid">Niepoprawna odpowiedź w obu próbach</option>
+    </select>
+  </div>
+  <div class="field">
+    <label for="t-route">Decyzja kodu po review AI</label>
+    <select id="t-route">
+      <option value="waiting">Do mentora: eskalacja, próbka lub faza kalibracji</option>
+      <option value="ai-done">Bez mentora: tylko review AI</option>
+      <option value="waiting-no-remarks">AI bez uwag, do mentora (R10)</option>
+    </select>
+  </div>
+  <div class="actions">
+    <button type="button" id="t-verify">Symuluj: mentor zakończył review</button>
+    <button type="button" id="t-longfrag">Wstaw fragment 520 linii</button>
+  </div>
+  <p class="meta" id="t-verify-note"></p>
+  <details>
+    <summary>Bezpośrednie stany (?state=)</summary>
+    <ul id="t-states"></ul>
+  </details>
+</aside>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------- Dane fikcyjne ----------
+  var FIX = {
+    prUrl: 'https://github.com/przyklad/sklep-demo/pull/12',
+    prLabel: 'PR: sklep-demo#12',
+    goal: 'Dodaję logowanie przez e-mail i nie wiem, czy dobrze obsługuję błędy',
+    date: '15 paź 2026',
+    verifiedAt: '15 paź, 14:20'
+  };
+  var SEV = { info: 0, minor: 1, major: 2, critical: 3 };
+  var SEV_UI = { info: 'Informacja', minor: 'Drobna', major: 'Istotna', critical: 'Krytyczna' };
+  var SEV_FORMS = {
+    info: ['informacja', 'informacje', 'informacji'],
+    minor: ['drobna', 'drobne', 'drobnych'],
+    major: ['istotna', 'istotne', 'istotnych'],
+    critical: ['krytyczna', 'krytyczne', 'krytycznych']
+  };
+  var CAT_UI = { readability: 'Czytelność', correctness: 'Poprawność', security: 'Bezpieczeństwo', testing: 'Testy', architecture: 'Architektura' };
+
+  var AI_REMARKS = [
+    { id: 'r1', category: 'security', severity: 'major', file: 'src/auth.ts', line: 42,
+      title: 'Hasło trafia do logów',
+      why: 'Logi czyta więcej osób i narzędzi niż bazę danych. Hasło zapisane w logu może odczytać każdy, kto ma do nich dostęp, a usunięcie go z kopii zapasowych jest trudne.',
+      code: [[40, 'export async function login(email: string, password: string) {'], [41, '  const user = await findUser(email);'], [42, '  logger.info("login attempt", { email, password });'], [43, '  if (!user) throw new LoginError();'], [44, '  return checkPassword(user, password);']] },
+    { id: 'r2', category: 'testing', severity: 'minor', file: 'src/auth.test.ts', line: 15,
+      title: 'Brak testu dla błędnego hasła',
+      why: 'Twój cel to dobra obsługa błędów, a testy sprawdzają tylko udane logowanie. Bez testu dla błędnego hasła nie wiesz, czy użytkownik dostanie właściwy komunikat.',
+      code: [[13, 'describe("login", () => {'], [14, '  it("loguje poprawnego użytkownika", async () => {'], [15, '    await expect(login("ala@example.com", "Haslo123!")).resolves.toBeTruthy();'], [16, '  });'], [17, '});']] },
+    { id: 'r3', category: 'readability', severity: 'minor', file: 'src/auth.ts', line: 57,
+      title: 'Nazwa zmiennej nie mówi, co przechowuje',
+      why: 'Jednoliterowa nazwa zmusza czytelnika do analizy wyrażenia, żeby zrozumieć, że chodzi o czas wygaśnięcia sesji. Opisowa nazwa skraca czytanie i ułatwia review.',
+      code: [[55, 'export function createSession(user: User) {'], [56, '  const id = randomId();'], [57, '  const d = Date.now() + 3600 * 1000;'], [58, '  return { id, userId: user.id, d };'], [59, '}']] }
+  ];
+  // Wersja sprawdzona: decyzje mentora (fikcyjne)
+  var MENTOR = {
+    r1: { origin: 'corrected', title: 'Hasło i e-mail trafiają do logów', severity: 'major',
+      why: 'Logi czyta więcej osób i narzędzi niż bazę danych. Hasło w logu to wyciek, a adres e-mail razem z próbą logowania to dane osobowe, których log nie potrzebuje.' },
+    r2: { origin: 'confirmed' },
+    r3: { origin: 'rejected' }
+  };
+  var MENTOR_ADDED = { id: 'm1', category: 'security', severity: 'major', file: 'src/auth.ts', line: 43,
+    title: 'Brak limitu prób logowania',
+    why: 'Bez limitu ktoś może automatycznie sprawdzać tysiące haseł dla jednego konta. Ograniczenie liczby nieudanych prób w krótkim czasie utrudnia taki atak.',
+    code: [[41, '  const user = await findUser(email);'], [42, '  logger.info("login attempt", { email, password });'], [43, '  if (!user) throw new LoginError();'], [44, '  return checkPassword(user, password);'], [45, '}']] };
+
+  var STATUS_BADGE = {
+    analyzing: 'Analizuję kod', retrying: 'Analizuję kod',
+    'error-timeout': 'Review nie powiodło się', 'error-invalid': 'Review nie powiodło się',
+    'ai-done': 'Review AI',
+    waiting: 'Czeka na mentora', 'waiting-no-remarks': 'Czeka na mentora', 'waiting-no-review': 'Czeka na mentora',
+    verified: 'Sprawdzone przez mentora'
+  };
+
+  var T = { send: 900, analyze: 1500, retry: 1500 };
+
+  // ---------- Stan w pamięci ----------
+  var S;
+  var timers = [];
+  function initialState() {
+    return { subs: [], nextId: 1, j1: 'auto', j3load: null, tab: 'pr', sending: false };
+  }
+  function later(fn, ms) { var t = setTimeout(fn, ms); timers.push(t); return t; }
+  function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+
+  // ---------- Pomocnicze ----------
+  function $(id) { return document.getElementById(id); }
+  function el(tag, attrs, kids) {
+    var n = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      if (k === 'text') n.textContent = attrs[k];
+      else if (k === 'cls') n.className = attrs[k];
+      else if (k.indexOf('on') === 0) n.addEventListener(k.slice(2), attrs[k]);
+      else n.setAttribute(k, attrs[k]);
+    });
+    (kids || []).forEach(function (c) { if (c != null) n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+    return n;
+  }
+  function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); }
+  function plural(n, forms) {
+    if (n === 1) return forms[0];
+    var d = n % 10, h = n % 100;
+    return (d >= 2 && d <= 4 && (h < 12 || h > 14)) ? forms[1] : forms[2];
+  }
+  function announce(msg) { var a = $('announce'); a.textContent = ''; setTimeout(function () { a.textContent = msg; }, 30); }
+  function sortRemarks(list) {
+    return list.slice().sort(function (a, b) {
+      return (SEV[b.severity] - SEV[a.severity]) || String(a.file).localeCompare(String(b.file)) || (a.line - b.line);
+    });
+  }
+  function shown(sub) {
+    // Uwagi widoczne dla juniora (bez odrzuconych)
+    if (sub.status === 'verified') return sub.verifiedRemarks.filter(function (r) { return r.origin !== 'rejected'; });
+    if (sub.status === 'ai-done' || sub.status === 'waiting') return sub.remarks;
+    return [];
+  }
+  function summary(list) {
+    if (!list.length) return '';
+    var head = list.length + ' ' + plural(list.length, ['uwaga', 'uwagi', 'uwag']);
+    var parts = ['critical', 'major', 'minor', 'info'].map(function (s) {
+      var c = list.filter(function (r) { return r.severity === s; }).length;
+      return c ? c + ' ' + plural(c, SEV_FORMS[s]) : null;
+    }).filter(Boolean);
+    return head + ': ' + parts.join(', ');
+  }
+  function lineCount(text) { return text === '' ? 0 : text.split('\n').length; }
+
+  // ---------- Zgłoszenia ----------
+  function createSub(source, goal, status) {
+    var sub = { id: S.nextId++, source: source, goal: goal, status: status, remarks: [], verifiedRemarks: [], aiFailed: false };
+    S.subs.unshift(sub);
+    return sub;
+  }
+  function getSub(id) { return S.subs.filter(function (s) { return s.id === id; })[0]; }
+
+  function startAnalysis(sub, mode) {
+    sub.status = 'analyzing';
+    sub.remarks = [];
+    rerender();
+    var route = $('t-route').value;
+    if (mode === 'ok') return later(function () { finish(sub, route); }, T.analyze);
+    later(function () {
+      sub.status = 'retrying';
+      rerender();
+      announce('Pierwsza próba się nie udała, próbuję jeszcze raz.');
+      later(function () {
+        if (mode === 'retry-ok') finish(sub, route);
+        else { sub.status = mode === 'timeout' ? 'error-timeout' : 'error-invalid'; rerender(); announce('Nie udało się zrobić review.'); }
+      }, T.retry);
+    }, T.analyze);
+  }
+  function finish(sub, route) {
+    sub.status = route;
+    sub.remarks = route === 'waiting-no-remarks' ? [] : sortRemarks(AI_REMARKS);
+    rerender();
+    announce('Review gotowe. Status: ' + STATUS_BADGE[route] + '.');
+  }
+  function verify(sub) {
+    var list = [];
+    if (sub.status === 'waiting') {
+      sub.remarks.forEach(function (r) {
+        var d = MENTOR[r.id] || { origin: 'confirmed' };
+        if (d.origin === 'corrected') list.push(Object.assign({}, r, { title: d.title, why: d.why, severity: d.severity, origin: 'corrected', original: r }));
+        else list.push(Object.assign({}, r, { origin: d.origin }));
+      });
+    }
+    list.push(Object.assign({}, MENTOR_ADDED, { origin: 'added' }));
+    sub.verifiedRemarks = sortRemarks(list);
+    sub.status = 'verified';
+  }
+
+  // ---------- Render: J1 ----------
+  function renderJ1() {
+    var body = $('j1-body'); clear(body);
+    var mode = S.j1;
+    if (mode === 'loading') {
+      body.appendChild(el('p', { cls: 'sr-only', text: 'Wczytuję zgłoszenia…' }));
+      for (var i = 0; i < 3; i++) body.appendChild(el('div', { cls: 'skeleton', 'aria-hidden': 'true' }));
+      return;
+    }
+    if (mode === 'error') {
+      body.appendChild(el('div', { cls: 'banner banner-error', role: 'alert' }, [
+        el('p', { text: 'Nie udało się wczytać zgłoszeń.' }),
+        el('button', { type: 'button', text: 'Spróbuj ponownie', onclick: function () { S.j1 = 'auto'; renderJ1(); announce('Zgłoszenia wczytane.'); } })
+      ]));
+      return;
+    }
+    if (!S.subs.length) {
+      body.appendChild(el('div', { cls: 'card' }, [
+        el('p', { text: 'Nie masz jeszcze zgłoszeń. Wyślij link do PR albo fragment kodu i opisz, co chcesz osiągnąć — dostaniesz review z wyjaśnieniem, co i dlaczego poprawić.' }),
+        el('a', { cls: 'btn btn-primary', href: '#j2', text: 'Nowe zgłoszenie' })
+      ]));
+      return;
+    }
+    var ul = el('ul', { style: 'list-style:none;padding:0;margin:0' });
+    S.subs.forEach(function (sub) {
+      var goal = sub.goal.length > 80 ? sub.goal.slice(0, 80) + '…' : sub.goal;
+      var list = shown(sub);
+      var count = sub.status === 'waiting-no-remarks' ? 'Bez uwag AI' : summary(list);
+      ul.appendChild(el('li', null, [el('a', { cls: 'card card-link', href: '#j3-' + sub.id }, [
+        el('strong', { text: goal }),
+        el('div', { cls: 'meta', text: sub.source.label + ' · ' + FIX.date }),
+        el('div', null, [el('span', { cls: 'badge', text: STATUS_BADGE[sub.status] }), count ? ' ' + count : null])
+      ])]));
+    });
+    body.appendChild(ul);
+  }
+
+  // ---------- Render: J2 ----------
+  var ERR_FIELDS = { 'pr-url': 'pr-url-err', frag: 'frag-err', goal: 'goal-err' };
+  function setErr(field, msg) {
+    var box = $(ERR_FIELDS[field]); clear(box);
+    var input = $(field);
+    if (!msg) { input.removeAttribute('aria-invalid'); return; }
+    input.setAttribute('aria-invalid', 'true');
+    if (typeof msg === 'string') box.appendChild(el('p', { cls: 'error', text: msg }));
+    else box.appendChild(msg);
+  }
+  function clearErrs() { Object.keys(ERR_FIELDS).forEach(function (f) { setErr(f, null); }); }
+  function setTab(tab, focus) {
+    S.tab = tab;
+    var pr = tab === 'pr';
+    $('tab-pr').setAttribute('aria-selected', String(pr)); $('tab-pr').tabIndex = pr ? 0 : -1;
+    $('tab-frag').setAttribute('aria-selected', String(!pr)); $('tab-frag').tabIndex = pr ? -1 : 0;
+    $('panel-pr').hidden = !pr; $('panel-frag').hidden = pr;
+    if (focus) $(pr ? 'pr-url' : 'frag').focus();
+  }
+  function serverError(text) {
+    var p = el('p', { cls: 'error' }, [text + ' ']);
+    p.appendChild(el('button', { type: 'button', cls: 'linklike', text: 'Wklej fragment kodu',
+      onclick: function () { setErr('pr-url', null); setTab('frag', true); } }));
+    return p;
+  }
+  var SERVER_MSG = {
+    private: 'Nie mamy dostępu do tego PR. Jest prywatny albo link jest błędny. Wklej kod jako fragment albo podaj link do publicznego PR.',
+    'too-large': 'Ten PR zmienia 1 240 linii, a limit to 400. Podziel zmianę na mniejsze PR albo wklej fragment, który chcesz omówić.',
+    'no-text': 'W tym PR nie ma zmian w kodzie, które możemy przeczytać.'
+  };
+  var PR_RE = /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/pull\/\d+\/?$/;
+
+  function validateClient() {
+    clearErrs();
+    var first = null;
+    function fail(f, m) { setErr(f, m); if (!first) first = f; }
+    if (S.tab === 'pr') {
+      var url = $('pr-url').value.trim();
+      if (!url) fail('pr-url', 'Wklej link do pull requesta.');
+      else if (!PR_RE.test(url)) fail('pr-url', 'To nie jest link do pull requesta na GitHubie. Przykład: https://github.com/uzytkownik/repo/pull/12');
+    } else {
+      var n = lineCount($('frag').value.replace(/\s+$/, ''));
+      if (n === 0) fail('frag', 'Wklej fragment kodu, który chcesz omówić.');
+      else if (n > 400) fail('frag', 'Fragment ma ' + n + ' linii, a limit to 400. Wklej część, o którą chcesz zapytać.');
+    }
+    if ($('goal').value.trim().length < 10) fail('goal', 'Opisz w kilku słowach, co chcesz osiągnąć (min. 10 znaków).');
+    if (first) { $(first).focus(); announce('Formularz ma błędy. Popraw zaznaczone pola.'); }
+    return !first;
+  }
+  function setSending(on) {
+    S.sending = on;
+    var b = $('submit');
+    b.disabled = on;
+    b.textContent = on ? (S.tab === 'pr' ? 'Sprawdzam PR…' : 'Wysyłam…') : 'Wyślij do review';
+  }
+  function onSubmit(e) {
+    e.preventDefault();
+    if (S.sending || !validateClient()) return;
+    setSending(true);
+    announce(S.tab === 'pr' ? 'Sprawdzam PR.' : 'Wysyłam.');
+    later(function () {
+      setSending(false);
+      if (S.tab === 'pr') {
+        var res = $('t-server').value;
+        if (res !== 'ok') { setErr('pr-url', serverError(SERVER_MSG[res])); $('pr-url').focus(); announce(SERVER_MSG[res]); return; }
+      }
+      var url = $('pr-url').value.trim();
+      var source = S.tab === 'pr'
+        ? { kind: 'pr', label: 'PR: ' + url.replace(/\/$/, '').split('/').slice(-3, -2)[0] + '#' + url.replace(/\/$/, '').split('/').pop() }
+        : { kind: 'frag', label: 'Fragment kodu' };
+      var sub = createSub(source, $('goal').value.trim(), 'analyzing');
+      resetForm();
+      go('#j3-' + sub.id);
+      startAnalysis(sub, $('t-model').value);
+    }, T.send);
+  }
+  function resetForm() {
+    $('j2-form').reset(); clearErrs(); setTab('pr'); setSending(false);
+  }
+
+  // ---------- Render: J3 ----------
+  function codeBlock(r) {
+    var pre = el('pre', { cls: 'code', 'aria-label': 'Kod, linie ' + r.code[0][0] + '–' + r.code[r.code.length - 1][0] });
+    r.code.forEach(function (ln) {
+      var mark = ln[0] === r.line;
+      pre.appendChild(el('span', mark ? { cls: 'hl' } : null, [(mark ? '→ ' : '  ') + String(ln[0]).padStart(3, ' ') + '  ' + ln[1] + '\n']));
+    });
+    return pre;
+  }
+  function loc(sub, r) { return sub.source.kind === 'frag' ? 'linia ' + r.line : r.file + ':' + r.line; }
+  var ORIGIN = { confirmed: 'Potwierdzone przez mentora', corrected: 'Poprawione przez mentora', added: 'Dodane przez mentora' };
+  function remarkCard(sub, r) {
+    var kids = [];
+    if (r.origin && ORIGIN[r.origin]) kids.push(el('p', { cls: 'origin', text: ORIGIN[r.origin] }));
+    kids.push(el('p', { cls: 'meta', text: SEV_UI[r.severity] + ' · ' + CAT_UI[r.category] + ' · ' + loc(sub, r) }));
+    kids.push(el('h3', { style: 'font-size:1rem;margin:.25rem 0', text: r.title }));
+    kids.push(el('p', null, [el('span', { cls: 'why-label', text: 'Dlaczego: ' }), r.why]));
+    if (r.origin === 'corrected' && r.original) {
+      kids.push(el('details', null, [
+        el('summary', { text: 'Pokaż pierwotną wersję AI' }),
+        el('p', { cls: 'meta', text: SEV_UI[r.original.severity] + ' · ' + CAT_UI[r.original.category] + ' · ' + loc(sub, r.original) }),
+        el('p', null, [el('strong', { text: r.original.title })]),
+        el('p', null, [el('span', { cls: 'why-label', text: 'Dlaczego: ' }), r.original.why])
+      ]));
+    }
+    kids.push(codeBlock(r));
+    return el('li', { cls: 'card' }, kids);
+  }
+  function remarkList(sub, list) {
+    var ul = el('ul', { style: 'list-style:none;padding:0;margin:0', 'aria-label': 'Uwagi' });
+    list.forEach(function (r) { ul.appendChild(remarkCard(sub, r)); });
+    return ul;
+  }
+  function banner(strong, rest, err) {
+    return el('div', { cls: 'banner' + (err ? ' banner-error' : ''), role: err ? 'alert' : null }, [
+      el('p', { style: 'margin:0' }, [el('strong', { text: strong }), rest ? ' ' + rest : null])
+    ]);
+  }
+  function renderJ3(sub) {
+    var body = $('j3-body'); clear(body);
+    if (S.j3load === 'loading') {
+      body.appendChild(el('p', { text: 'Wczytuję review…' }));
+      for (var i = 0; i < 3; i++) body.appendChild(el('div', { cls: 'skeleton', 'aria-hidden': 'true' }));
+      return;
+    }
+    if (S.j3load === 'error') {
+      body.appendChild(el('div', { cls: 'banner banner-error', role: 'alert' }, [
+        el('p', { text: 'Nie udało się wczytać review.' }),
+        el('button', { type: 'button', text: 'Spróbuj ponownie', onclick: function () { S.j3load = null; renderJ3(sub); announce('Review wczytane.'); } })
+      ]));
+      return;
+    }
+    body.appendChild(el('div', { cls: 'sticky' }, [
+      el('p', { text: sub.goal }),
+      el('span', { cls: 'badge badge-strong', text: STATUS_BADGE[sub.status] }),
+      el('span', { cls: 'meta', text: ' ' + sub.source.label })
+    ]));
+    var st = sub.status;
+    if (st === 'analyzing' || st === 'retrying') {
+      body.appendChild(el('div', { cls: 'banner', 'aria-busy': 'true' }, [
+        el('p', { style: 'margin:0', text: 'AI czyta kod i cel zgłoszenia. Zwykle trwa to do minuty. Możesz zamknąć stronę — wynik znajdziesz w „Moje zgłoszenia”.' }),
+        st === 'retrying' ? el('p', { style: 'margin:.5rem 0 0;font-weight:700', text: 'Pierwsza próba się nie udała, próbuję jeszcze raz…' }) : null
+      ]));
+      for (var k = 0; k < 3; k++) body.appendChild(el('div', { cls: 'skeleton', 'aria-hidden': 'true' }));
+      return;
+    }
+    if (st === 'error-timeout' || st === 'error-invalid') {
+      var why = st === 'error-timeout' ? 'AI nie odpowiedziało na czas. Zgłoszenie jest zapisane.' : 'AI zwróciło odpowiedź, której nie możemy bezpiecznie pokazać. Zgłoszenie jest zapisane.';
+      body.appendChild(banner('Nie udało się zrobić review.', why, true));
+      body.appendChild(el('div', { cls: 'actions' }, [
+        el('button', { type: 'button', cls: 'btn-primary', text: 'Spróbuj ponownie', onclick: function () { startAnalysis(sub, 'ok'); announce('Ponawiam review.'); } }),
+        el('button', { type: 'button', text: 'Poproś mentora', onclick: function () { sub.status = 'waiting-no-review'; sub.aiFailed = true; rerender(); announce('Zgłoszenie czeka na mentora.'); } })
+      ]));
+      return;
+    }
+    if (st === 'waiting') body.appendChild(banner('Czeka na mentora.', 'Mentor sprawdzi te uwagi. Do tego czasu traktuj je jako wstępne — mogą się zmienić albo zniknąć. Część zgłoszeń trafia do mentora losowo, więc ta etykieta nie oznacza, że kod jest gorszy.'));
+    if (st === 'waiting-no-remarks') body.appendChild(banner('Czeka na mentora.', 'AI nie znalazło uwag do tego kodu. Mentor sprawdzi, czy czegoś nie przeoczyło.'));
+    if (st === 'waiting-no-review') body.appendChild(banner('Czeka na mentora.', 'Review AI się nie udało, więc mentor zrobi je od początku.'));
+    if (st === 'verified') body.appendChild(banner('Sprawdzone przez mentora', FIX.verifiedAt + '.'));
+
+    var list = shown(sub);
+    if (list.length) {
+      body.appendChild(el('h2', { text: summary(list) }));
+      body.appendChild(remarkList(sub, list));
+    }
+    if (st === 'verified') {
+      var rej = sub.verifiedRemarks.filter(function (r) { return r.origin === 'rejected'; });
+      if (rej.length) body.appendChild(el('details', { cls: 'card' }, [
+        el('summary', { text: 'Odrzucone przez mentora (' + rej.length + ') — uznane za nietrafne, nie musisz ich poprawiać.' }),
+        remarkList(sub, rej)
+      ]));
+    }
+    if (st === 'ai-done') {
+      body.appendChild(el('div', { cls: 'actions' }, [
+        el('button', { type: 'button', id: 'ask-mentor', text: 'Poproś mentora o sprawdzenie', onclick: function () { pendingAsk = sub; $('ask-dialog').showModal(); $('ask-confirm').focus(); } })
+      ]));
+    }
+  }
+  var pendingAsk = null;
+
+  // ---------- Nawigacja ----------
+  function go(hash) { if (location.hash === hash) render(true); else location.hash = hash; }
+  function route() {
+    var h = location.hash || '#j1';
+    if (h === '#j1' || h === '#j2') return { screen: h.slice(1) };
+    var m = /^#j3-(\d+)$/.exec(h);
+    if (m && getSub(Number(m[1]))) return { screen: 'j3', sub: getSub(Number(m[1])) };
+    return { screen: 'unknown' };
+  }
+  var current = null;
+  function render(moveFocus) {
+    var r = route();
+    current = r;
+    document.querySelectorAll('[data-screen]').forEach(function (s) { s.hidden = s.id !== r.screen; });
+    $('nav-j1').toggleAttribute('aria-current', r.screen === 'j1');
+    if (r.screen === 'j1') { $('nav-j1').setAttribute('aria-current', 'page'); renderJ1(); }
+    if (r.screen === 'j3') renderJ3(r.sub);
+    updateTestPanel();
+    var titles = { j1: 'Moje zgłoszenia', j2: 'Nowe zgłoszenie', j3: 'Review', unknown: 'Nie ma takiego ekranu' };
+    document.title = titles[r.screen] + ' — prototyp Review-first Mentoring';
+    if (moveFocus) { var hd = $(r.screen + '-h'); if (hd) hd.focus(); }
+  }
+  function rerender() { render(false); }
+  function updateTestPanel() {
+    var sub = current && current.sub;
+    var ok = !!(sub && /^waiting/.test(sub.status));
+    $('t-verify').disabled = !ok;
+    $('t-verify-note').textContent = ok ? '' : 'Dostępne na ekranie Review, gdy zgłoszenie czeka na mentora. Panel mentora jest poza tym prototypem.';
+  }
+
+  // ---------- ?state= (wartości z ux-shape-rdzen-ai.md) ----------
+  var J2_STATES = ['invalid-url', 'private-pr', 'diff-too-large'];
+  var J3_STATES = ['analyzing', 'retrying', 'timeout', 'invalid-json', 'ai-done', 'waiting', 'waiting-no-remarks', 'verified'];
+  var GENERIC = ['loading', 'empty', 'error', 'success'];
+  function applyState(state) {
+    var pr = { kind: 'pr', label: FIX.prLabel };
+    if (J2_STATES.indexOf(state) >= 0) {
+      location.hash = '#j2'; render(false);
+      $('goal').value = FIX.goal;
+      if (state === 'invalid-url') { $('pr-url').value = 'github.com/przyklad/sklep-demo'; validateClient(); }
+      else { $('pr-url').value = FIX.prUrl; setErr('pr-url', serverError(SERVER_MSG[state === 'private-pr' ? 'private' : 'too-large'])); }
+      return true;
+    }
+    if (J3_STATES.indexOf(state) >= 0) {
+      var sub = createSub(pr, FIX.goal, 'analyzing');
+      if (state === 'analyzing') startAnalysis(sub, 'ok');
+      else if (state === 'retrying') { sub.status = 'retrying'; later(function () { finish(sub, $('t-route').value); }, T.retry); }
+      else if (state === 'timeout') sub.status = 'error-timeout';
+      else if (state === 'invalid-json') sub.status = 'error-invalid';
+      else if (state === 'waiting-no-remarks') finish(sub, 'waiting-no-remarks');
+      else if (state === 'verified') { finish(sub, 'waiting'); verify(sub); }
+      else finish(sub, state);
+      location.hash = '#j3-' + sub.id; render(false);
+      return true;
+    }
+    if (GENERIC.indexOf(state) >= 0) {
+      var h = location.hash || '#j1';
+      if (/^#j3/.test(h)) {
+        var s3 = createSub(pr, FIX.goal, 'analyzing'); finish(s3, 'waiting');
+        if (state === 'loading') { S.j3load = 'loading'; later(function () { S.j3load = null; rerender(); announce('Review wczytane.'); }, T.analyze); }
+        if (state === 'error') S.j3load = 'error';
+        location.hash = '#j3-' + s3.id; render(false);
+        return true;
+      }
+      if (h === '#j2') { location.hash = '#j2'; render(false); if (state === 'loading') { $('goal').value = FIX.goal; $('pr-url').value = FIX.prUrl; setSending(true); later(function () { setSending(false); }, T.send); } return true; }
+      if (state === 'success' || state === 'loading' || state === 'error') seedList();
+      if (state === 'loading') { S.j1 = 'loading'; later(function () { S.j1 = 'auto'; rerender(); announce('Zgłoszenia wczytane.'); }, T.analyze); }
+      if (state === 'error') S.j1 = 'error';
+      location.hash = '#j1'; render(false);
+      return true;
+    }
+    return false;
+  }
+  function seedList() {
+    var a = createSub({ kind: 'frag', label: 'Fragment kodu' }, 'Chcę sprawdzić, czy walidacja formularza rejestracji jest czytelna', 'analyzing'); finish(a, 'ai-done');
+    var b = createSub({ kind: 'pr', label: FIX.prLabel }, FIX.goal, 'analyzing'); finish(b, 'waiting'); verify(b);
+    var c = createSub({ kind: 'pr', label: 'PR: sklep-demo#15' }, 'Dodaję koszyk i nie wiem, czy dobrze dzielę kod na moduły', 'analyzing'); finish(c, 'waiting');
+  }
+
+  // ---------- Reset ----------
+  function reset() {
+    clearTimers();
+    if ($('ask-dialog').open) $('ask-dialog').close();
+    S = initialState();
+    resetForm();
+    $('t-server').value = 'ok'; $('t-model').value = 'ok'; $('t-route').value = 'waiting';
+    try { history.replaceState(null, '', location.pathname + '#j1'); } catch (e) { /* file:// może blokować zmianę adresu */ }
+    if (location.hash !== '#j1') location.hash = '#j1';
+    render(true);
+    announce('Symulacja zresetowana. Start: Moje zgłoszenia, brak zgłoszeń.');
+  }
+
+  // ---------- Zdarzenia ----------
+  $('j2-form').addEventListener('submit', onSubmit);
+  $('tab-pr').addEventListener('click', function () { setTab('pr', true); });
+  $('tab-frag').addEventListener('click', function () { setTab('frag', true); });
+  $('j2-form').querySelector('[role="tablist"]').addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { var t = S.tab === 'pr' ? 'frag' : 'pr'; setTab(t); $(t === 'pr' ? 'tab-pr' : 'tab-frag').focus(); e.preventDefault(); }
+  });
+  $('ask-confirm').addEventListener('click', function () {
+    $('ask-dialog').close();
+    if (pendingAsk) { pendingAsk.status = 'waiting'; pendingAsk = null; rerender(); $('j3-h').focus(); announce('Zgłoszenie czeka na mentora.'); }
+  });
+  $('ask-cancel').addEventListener('click', function () { $('ask-dialog').close(); pendingAsk = null; var b = $('ask-mentor'); if (b) b.focus(); });
+  $('t-verify').addEventListener('click', function () {
+    var sub = current && current.sub;
+    if (sub && /^waiting/.test(sub.status)) { verify(sub); rerender(); announce('Mentor zakończył review. Widzisz wersję sprawdzoną.'); }
+  });
+  $('t-longfrag').addEventListener('click', function () {
+    var lines = []; for (var i = 1; i <= 520; i++) lines.push('// linia ' + i);
+    $('frag').value = lines.join('\n'); go('#j2'); setTab('frag', true);
+  });
+  $('reset').addEventListener('click', reset);
+  window.addEventListener('hashchange', function () { render(true); });
+
+  var stateList = $('t-states');
+  [['j1', GENERIC], ['j2', J2_STATES.concat(['loading', 'success'])], ['j3', J3_STATES.concat(['loading', 'error'])]].forEach(function (g) {
+    g[1].forEach(function (s) {
+      var href = '?state=' + s + (g[0] === 'j1' ? '#j1' : g[0] === 'j2' ? '#j2' : '#j3');
+      stateList.appendChild(el('li', null, [el('a', { href: href, text: g[0].toUpperCase() + ': ' + s })]));
+    });
+  });
+
+  // ---------- Start ----------
+  S = initialState();
+  setTab('pr');
+  var st = new URLSearchParams(location.search).get('state');
+  if (!(st && applyState(st))) {
+    // Start bez zdarzenia hashchange: fokus zostaje na początku dokumentu, pierwszy Tab trafia w „Reset symulacji”
+    if (!location.hash) { try { history.replaceState(null, '', location.pathname + location.search + '#j1'); } catch (e) { location.hash = '#j1'; } }
+    render(false);
+    if (st) announce('Nieznany stan „' + st + '”. Pokazuję ekran startowy.');
+  }
+})();
+</script>
+</body>
+</html>
