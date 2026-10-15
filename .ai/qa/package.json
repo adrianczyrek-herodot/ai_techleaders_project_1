@@ -1,0 +1,13 @@
+{
+  "name": "qa-browser-tooling",
+  "private": true,
+  "description": "Isolated Playwright tooling for agent-driven browser checks (see .ai/browsers/playwright.md). Move to root devDependencies once the Next.js app has its own package.json.",
+  "type": "module",
+  "scripts": {
+    "doctor": "node scripts/doctor.mjs",
+    "check:prototype": "node scripts/check-prototype.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1"
+  }
+}
