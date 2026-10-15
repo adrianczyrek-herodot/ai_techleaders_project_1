@@ -193,7 +193,7 @@ Stany: ładowanie (szkielet), błąd wczytania („Nie udało się wczytać zgł
 
 ### E1 — „Jakość AI” (mentor i właściciel)
 
-Pasek fazy jak w M1. Obok wybór wersji: „Wersja promptu: v3 · iteracja 2” z listą wszystkich wersji i opcją „Wszystkie wersje”. Domyślnie wybrana jest wersja, na której liczy się kryterium precyzji (najnowsza z co najmniej 30 ocenionymi uwagami z próbki), a gdy takiej nie ma — najnowsza. Sekcje 2 i 3 liczą się dla wybranej wersji. Liczymy tylko zakończone review (decyzje zmienione przed zakończeniem się nie liczą).
+Pasek fazy jak w M1. Obok wybór wersji: „Wersja promptu: v3 · iteracja 2” z listą wszystkich wersji i opcją „Wszystkie wersje”. Domyślnie wybrana jest wersja, na której liczy się kryterium precyzji (najnowsza z co najmniej 30 ocenionymi uwagami z próbki), a gdy takiej nie ma — najnowsza. Sekcje 2–4 (w tym recall) liczą się dla wybranej wersji. Karty kryteriów nie zależą od wyboru: kryterium precyzji ma własną regułę wersji, kryterium 25% liczy wszystkie wersje. Liczymy tylko zakończone review (decyzje zmienione przed zakończeniem się nie liczą).
 
 **Wersje i iteracje (O1).** Każde review AI zapisuje `prompt_version`. Nowa wersja powstaje przy każdej zmianie promptu lub modelu; v1 to stan początkowy, a każda zmiana to jedna iteracja (v2 = iteracja 1, v4 = iteracja 3). Ponowienie po błędzie używa tej samej wersji. Przypadki testowe dziedziczą wersję review, którego dotyczą.
 
@@ -210,7 +210,7 @@ Karta „Precyzja luźna na próbce ≥ 60%” (D13, R19, O1). 30 ocenionych uwa
 
 Gdy najnowsza wersja zbiera jeszcze dane, pod tekstem drobna linia: „v5 zbiera dane: 8 z 30.” Wynik nowej wersji zastępuje poprzedni dopiero po 30 uwagach.
 
-Karta „Przeoczenia istotne lub krytyczne w ≤ 25% zgłoszeń z próbki” (D16, R19). Liczona łącznie dla wszystkich wersji (O8). n = zakończone zgłoszenia z próbki, licznik = zgłoszenia z co najmniej jedną uwagą mentora ≥ `major`:
+Karta „Przeoczenia istotne lub krytyczne w ≤ 25% zgłoszeń z próbki” (D16, R19), z podpisem pod tytułem „wszystkie wersje”. Liczona łącznie dla wszystkich wersji promptu i modelu (O8). n = zakończone zgłoszenia z próbki, licznik = zgłoszenia z co najmniej jedną uwagą mentora ≥ `major`:
 
 | n | Wynik | Odznaka | Tekst |
 |---|---|---|---|
@@ -335,8 +335,9 @@ Zaakceptowane przez Adriana Czyrka. Nie zmieniają reguł z briefu:
 2. Odpowiedź modelu walidowana w całości; jedno automatyczne ponowienie; surowe niepoprawne odpowiedzi trafiają do logu.
 3. Zdanie o losowym wyborze w banerze juniora (O7 nadal otwarte jako potwierdzenie zgodności z R12).
 4. Tabela „Pewność a trafność” i licznik błędów modelu w E1.
-5. O1: 30 ocenionych uwag AI z próbki liczone osobno dla każdej wersji promptu. Iteracja = zmiana promptu lub modelu, zapisana jako `prompt_version` przy review. Kryterium precyzji liczone na najnowszej wersji z co najmniej 30 uwagami. Odczyt agenta: v1 to stan początkowy, „3 iteracje” = co najmniej 3 zmiany (v4).
+5. O1: 30 ocenionych uwag AI z próbki liczone osobno dla każdej wersji promptu. Iteracja = zmiana promptu lub modelu, zapisana jako `prompt_version` przy review. Kryterium precyzji liczone na najnowszej wersji z co najmniej 30 uwagami. v1 to stan początkowy, „3 iteracje” = co najmniej 3 zmiany, czyli v4 (zaakceptowane).
 6. O2: zgłoszenie po błędzie modelu wysłane do mentora nie liczy się do metryk ani do 50 zgłoszeń fazy kalibracji.
+7. O8: kryterium 25% liczone łącznie dla wszystkich wersji (karta z podpisem „wszystkie wersje”); recall w tabeli metryk liczony dla wybranej wersji, jak pozostałe metryki.
 
 ## ⚠️ Pytania otwarte (nieblokujące — przyjęte domyślne)
 
@@ -347,7 +348,6 @@ Zaakceptowane przez Adriana Czyrka. Nie zmieniają reguł z briefu:
 | O5 | Czy mentor może zmienić decyzję po „Zakończ review”? | nie | właściciel |
 | O6 | Pole powodu przy „Odrzuć” (pomogłoby w iteracji promptu)? | brak w MVP, „Później” | właściciel |
 | O7 | Czy zdanie „Część zgłoszeń trafia do mentora losowo” mieści się w R12? | tak — mówi o zasadzie, nie o danym zgłoszeniu | właściciel |
-| O8 | Kryterium 25% i recall: liczyć łącznie dla wszystkich wersji promptu, czy też per wersja jak kryterium precyzji? Per wersja opóźni decyzję o kryterium 2 po każdej zmianie | łącznie dla wszystkich wersji; tabela metryk pokazuje recall dla wybranej wersji | właściciel |
 | Q03 | Płatnik i pochodzenie mentorów (z briefu) | poza MVP | właściciel |
 
 ## 🧪 Granice dowodów
