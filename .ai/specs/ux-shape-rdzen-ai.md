@@ -4,7 +4,7 @@
 - Wejście: `.ai/specs/product-brief.md` (potwierdzony, D23–D26)
 - Czytelnik: osoba, która napisze `KONCEPCJA.md` (Etap 1) i zbuduje klikalne mockupy (Etap 2, D03), bez udziału w discovery
 - Kontrakt projektowy: brak (`.uxproof/` nie istnieje), więc nazwy komponentów są opisowe, nie z rejestru. `[PRODUCT]` oznacza tu decyzję z briefu (Rxx, Dxx).
-- Status: propozycja do akceptacji Etapu 1. Nowe decyzje są oznaczone **(propozycja)** i zebrane w „Do akceptacji”.
+- Status: kierunek zaakceptowany przez właściciela 2026-10-15 (punkty 1–4, O1, O2 — sekcja „Decyzje właściciela”). Podstawa Etapu 1.
 
 ## 🎯 Rekomendacja
 
@@ -31,11 +31,12 @@ Decydujący kompromis: ukrycie pewności przed decyzją mentora spowalnia mu ust
 **Teraz** (ponad zakres Now z briefu dokładamy tylko to, czego wymaga ta koncepcja):
 - 7 ekranów opisanych niżej, każdy ze stanami ładowania, pustym, błędu i sukcesu.
 - Walidacja wejścia przed wywołaniem modelu: link, prywatny PR, za duży diff.
-- Walidacja całej odpowiedzi modelu, jedno automatyczne ponowienie, błąd z drogą dalej.
-- Pewność ukryta przed mentorem do jego decyzji **(propozycja)**.
-- W „Jakość AI”: tabela „Pewność a trafność” (bezpośredni test A03 i podstawa ponownej kalibracji progu 0,7, D17) i licznik błędów modelu (D08) **(propozycja)**.
+- Walidacja całej odpowiedzi modelu, jedno automatyczne ponowienie, błąd z drogą dalej; surowe niepoprawne odpowiedzi w logu.
+- `prompt_version` zapisywane przy każdym review; metryki i kryterium precyzji liczone per wersja.
+- Pewność ukryta przed mentorem do jego decyzji.
+- W „Jakość AI”: tabela „Pewność a trafność” (bezpośredni test A03 i podstawa ponownej kalibracji progu 0,7, D17) i licznik błędów modelu (D08).
 
-**Później:** lista i eksport przypadków testowych (JSON) do ponownego uruchamiania promptu; pomiar czasu review mentora (test A02); opcjonalny powód odrzucenia uwagi; historia zmian decyzji mentora; GitHub OAuth dla prywatnych PR.
+**Później:** podgląd logu niepoprawnych odpowiedzi w UI; lista i eksport przypadków testowych (JSON) do ponownego uruchamiania promptu; pomiar czasu review mentora (test A02); opcjonalny powód odrzucenia uwagi; historia zmian decyzji mentora; GitHub OAuth dla prywatnych PR.
 
 **Nie robimy:** N01–N05 z briefu. Do tego: filtrów i sortowania w kolejce mentora (jeden mentor, kolejka od najstarszego), częściowego review przy za dużym diffie, pokazywania juniorowi pewności w jakiejkolwiek formie (D07), czatu z AI o uwadze.
 
@@ -192,19 +193,24 @@ Stany: ładowanie (szkielet), błąd wczytania („Nie udało się wczytać zgł
 
 ### E1 — „Jakość AI” (mentor i właściciel)
 
-Pasek fazy jak w M1, a obok „Wersja promptu: v2”. Liczymy tylko zakończone review (decyzje zmienione przed zakończeniem się nie liczą).
+Pasek fazy jak w M1. Obok wybór wersji: „Wersja promptu: v3 · iteracja 2” z listą wszystkich wersji i opcją „Wszystkie wersje”. Domyślnie wybrana jest wersja, na której liczy się kryterium precyzji (najnowsza z co najmniej 30 ocenionymi uwagami z próbki), a gdy takiej nie ma — najnowsza. Sekcje 2 i 3 liczą się dla wybranej wersji. Liczymy tylko zakończone review (decyzje zmienione przed zakończeniem się nie liczą).
+
+**Wersje i iteracje (O1).** Każde review AI zapisuje `prompt_version`. Nowa wersja powstaje przy każdej zmianie promptu lub modelu; v1 to stan początkowy, a każda zmiana to jedna iteracja (v2 = iteracja 1, v4 = iteracja 3). Ponowienie po błędzie używa tej samej wersji. Przypadki testowe dziedziczą wersję review, którego dotyczą.
 
 **Sekcja 1 — „Kryteria porzucenia”**, dwie karty, pod każdą „Decyzję o rewizji podejmuje właściciel.” System niczego nie wyłącza.
 
-Karta „Precyzja luźna na próbce ≥ 60%” (D13, R19):
+Karta „Precyzja luźna na próbce ≥ 60%” (D13, R19, O1). 30 ocenionych uwag AI z próbki liczy się osobno dla każdej wersji promptu. Wynik liczymy na najnowszej wersji, która ma co najmniej 30 takich uwag; ocena kryterium wymaga dodatkowo co najmniej 3 iteracji:
 
 | Warunek | Odznaka | Tekst |
 |---|---|---|
-| < 30 ocenionych uwag AI z próbki lub < 3 iteracje promptu | „Za mało danych” | „12 z 30 ocenionych uwag AI z próbki · iteracja promptu 1 z 3. Przeoczenia się tu nie liczą.” |
-| oba progi osiągnięte, ≥ 60% | „Spełnione” | „Precyzja luźna 72% (n = 34) — powyżej progu 60%.” |
-| oba progi osiągnięte, < 60% | „Rewizja koncepcji” | „Precyzja luźna 54% (n = 31) — poniżej progu 60%. Kryterium mówi: rewizja koncepcji.” |
+| żadna wersja nie ma 30 ocenionych uwag z próbki | „Za mało danych” | „v3: 12 z 30 ocenionych uwag AI z próbki · iteracja 2 z 3. Przeoczenia się tu nie liczą.” |
+| jest wersja z ≥ 30 uwagami, ale < 3 iteracje | „Za mało danych” | „v2: precyzja luźna 66% (n = 31) — wynik orientacyjny. Ocena kryterium od 3. iteracji (teraz 1).” |
+| ≥ 3 iteracje, wersja z ≥ 30 uwagami, ≥ 60% | „Spełnione” | „v4: precyzja luźna 72% (n = 34) — powyżej progu 60%.” |
+| ≥ 3 iteracje, wersja z ≥ 30 uwagami, < 60% | „Rewizja koncepcji” | „v4: precyzja luźna 54% (n = 31) — poniżej progu 60%. Kryterium mówi: rewizja koncepcji.” |
 
-Karta „Przeoczenia istotne lub krytyczne w ≤ 25% zgłoszeń z próbki” (D16, R19). n = zakończone zgłoszenia z próbki, licznik = zgłoszenia z co najmniej jedną uwagą mentora ≥ `major`:
+Gdy najnowsza wersja zbiera jeszcze dane, pod tekstem drobna linia: „v5 zbiera dane: 8 z 30.” Wynik nowej wersji zastępuje poprzedni dopiero po 30 uwagach.
+
+Karta „Przeoczenia istotne lub krytyczne w ≤ 25% zgłoszeń z próbki” (D16, R19). Liczona łącznie dla wszystkich wersji (O8). n = zakończone zgłoszenia z próbki, licznik = zgłoszenia z co najmniej jedną uwagą mentora ≥ `major`:
 
 | n | Wynik | Odznaka | Tekst |
 |---|---|---|---|
@@ -226,9 +232,9 @@ Od n ≥ 10 pod tekstem drobna linia: „Jedno zgłoszenie zmienia ten wynik o 4
 
 n przy precyzji = ocenione uwagi AI, n przy recall = trafne uwagi AI + przeoczenia (D24). Pod tabelą: „Eskalacje: 38% zgłoszeń (19 z 50)” (wskaźnik bez progu).
 
-**Sekcja 3 — „Pewność a trafność”** **(propozycja)**. Wszystkie strumienie, zakończone review. Wiersze: „poniżej 0,5”, „0,5–0,69”, „0,7–0,89”, „0,9 i więcej”. Kolumny: „Uwagi (n)”, „Trafne (zatw. + popr.)”, „w tym istotne i krytyczne: trafne / n”. Podpis: „Jeśli trafność nie rośnie z pewnością, warunek pewności w regule eskalacji niewiele daje.” Komórka z n < 5 pokazuje tylko n.
+**Sekcja 3 — „Pewność a trafność”**. Wszystkie strumienie, zakończone review, wybrana wersja (pewność nowego modelu lub promptu może znaczyć co innego). Wiersze: „poniżej 0,5”, „0,5–0,69”, „0,7–0,89”, „0,9 i więcej”. Kolumny: „Uwagi (n)”, „Trafne (zatw. + popr.)”, „w tym istotne i krytyczne: trafne / n”. Podpis: „Jeśli trafność nie rośnie z pewnością, warunek pewności w regule eskalacji niewiele daje.” Komórka z n < 5 pokazuje tylko n.
 
-**Sekcja 4 — „Błędy modelu”** **(propozycja)**: „58 wywołań · udane za pierwszym razem 52 · udane po ponowieniu 4 · przekroczony czas 1 · niepoprawna odpowiedź 1”.
+**Sekcja 4 — „Błędy modelu”**, dla wybranej wersji: „58 wywołań · udane za pierwszym razem 52 · udane po ponowieniu 4 · przekroczony czas 1 · niepoprawna odpowiedź 1”.
 
 | Stan | Co widać |
 |---|---|
@@ -243,7 +249,7 @@ Przełącznik roli w nagłówku: „Junior” | „Mentor”. Nawigacja juniora:
 - J2: `invalid-url`, `private-pr`, `diff-too-large`.
 - J3: `analyzing`, `retrying`, `timeout`, `invalid-json`, `ai-done`, `waiting`, `waiting-no-remarks`, `verified`.
 - M2: `no-remarks`, `save-error`, `done`.
-- E1: `calibration`, `warning`, `revise`.
+- E1: `calibration`, `warning`, `revise`, `few-iterations` (wersja z 30 uwagami, < 3 iteracje), `version-collecting` (nowa wersja zbiera dane).
 
 ## 📋 Zachowanie AI
 
@@ -267,6 +273,8 @@ Przełącznik roli w nagłówku: „Junior” | „Mentor”. Nawigacja juniora:
 }
 ```
 
+Model nie zwraca wersji. `prompt_version` (np. `v3`, z zapisanym promptem i nazwą modelu) dopisuje aplikacja do rekordu review w chwili wywołania.
+
 Reguły walidacji (cała odpowiedź przechodzi albo nie):
 - poprawny JSON;
 - `remarks` jest tablicą (może być pusta, wtedy R10);
@@ -285,11 +293,13 @@ Reguły walidacji (cała odpowiedź przechodzi albo nie):
 | Błąd | Wykrycie | Ponowienie | Co widzi junior | Droga dalej | Zapis |
 |---|---|---|---|---|---|
 | Timeout | brak odpowiedzi w 60 s `[ASSUMPTION]` | 1 automatyczne, z banerem „Pierwsza próba się nie udała…” | „**Nie udało się zrobić review.** AI nie odpowiedziało na czas. Zgłoszenie jest zapisane.” | „Spróbuj ponownie” · „Poproś mentora” | licznik „przekroczony czas” |
-| Niepoprawny JSON lub naruszenie schematu | walidacja powyżej | 1 automatyczne, z informacją o błędzie walidacji w prompcie | „**Nie udało się zrobić review.** AI zwróciło odpowiedź, której nie możemy bezpiecznie pokazać. Zgłoszenie jest zapisane.” | jak wyżej | licznik „niepoprawna odpowiedź” + surowa odpowiedź do analizy promptu |
+| Niepoprawny JSON lub naruszenie schematu | walidacja powyżej | 1 automatyczne, z informacją o błędzie walidacji w prompcie | „**Nie udało się zrobić review.** AI zwróciło odpowiedź, której nie możemy bezpiecznie pokazać. Zgłoszenie jest zapisane.” | jak wyżej | licznik „niepoprawna odpowiedź” + wpis w logu (niżej) |
 | Za duży diff | przed wywołaniem modelu | — | komunikat w J2 | fragment kodu lub mniejszy PR | zgłoszenie nie powstaje |
 | Prywatny PR | przed wywołaniem modelu (404) | — | komunikat w J2 | fragment kodu lub publiczny PR | zgłoszenie nie powstaje |
 
-„Poproś mentora” po błędzie kieruje zgłoszenie do eskalacji z powodem „Brak review AI (błąd modelu)”. Mentor może tylko dodać uwagi. Takie zgłoszenie nie wchodzi do metryk ani do licznika fazy kalibracji **(propozycja, O2)**.
+**Log niepoprawnych odpowiedzi.** Każda odpowiedź, która nie przeszła walidacji, trafia do logu w surowej postaci, także ta z pierwszej próby, po której ponowienie się udało. Wpis: id zgłoszenia, `prompt_version`, numer próby (1 lub 2), czas, surowa odpowiedź, lista naruszonych reguł (np. „`severity`: wartość spoza enumu”, „`why` krótsze niż 20 znaków”). Timeout nie ma odpowiedzi, więc zapisuje tylko id, wersję, próbę i czas oczekiwania. Log czyta tylko właściciel; zawiera kod juniora, więc nie trafia do UI juniora ani mentora. Junior widzi wyłącznie komunikat z tabeli.
+
+„Poproś mentora” po błędzie kieruje zgłoszenie do eskalacji z powodem „Brak review AI (błąd modelu)”. Mentor może tylko dodać uwagi. Takie zgłoszenie nie wchodzi do metryk ani do licznika fazy kalibracji (O2), a uwagi mentora w nim nie są przeoczeniami AI.
 
 **Którą pomyłkę wolimy:**
 - Przy eskalacji wolimy fałszywy alarm (mentor dostaje zgłoszenie bez potrzeby) niż przeoczenie, bo dla juniora przeoczony poważny błąd kosztuje więcej niż czekanie (R10, R16 to potwierdzają).
@@ -318,25 +328,26 @@ Najbardziej ryzykowne przekonanie to A03: `confidence` odróżnia trafne uwagi �
 
 **Test mockupu (Etap 2):** właściciel w roli mentora, na telefonie, ocenia zgłoszenie z 5 uwagami (1 poprawka, 1 dodana uwaga, 1 ostrzeżenie o kodzie). Jeśli ocena 5 uwag wymaga przełączania „Uwagi” / „Cały kod” przy każdej uwadze, kontekst kodu w karcie jest za krótki.
 
-## ⚠️ Do akceptacji w Etapie 1
+## ✅ Decyzje właściciela (2026-10-15)
 
-Te decyzje nie zmieniają reguł z briefu, ale są nowe:
+Zaakceptowane przez Adriana Czyrka. Nie zmieniają reguł z briefu:
 1. Pewność ukryta przed mentorem do jego decyzji przy uwadze (kompromis opisany w rekomendacji).
-2. Odpowiedź modelu walidowana w całości; jedno automatyczne ponowienie.
-3. Zdanie o losowym wyborze w banerze juniora (O7).
+2. Odpowiedź modelu walidowana w całości; jedno automatyczne ponowienie; surowe niepoprawne odpowiedzi trafiają do logu.
+3. Zdanie o losowym wyborze w banerze juniora (O7 nadal otwarte jako potwierdzenie zgodności z R12).
 4. Tabela „Pewność a trafność” i licznik błędów modelu w E1.
+5. O1: 30 ocenionych uwag AI z próbki liczone osobno dla każdej wersji promptu. Iteracja = zmiana promptu lub modelu, zapisana jako `prompt_version` przy review. Kryterium precyzji liczone na najnowszej wersji z co najmniej 30 uwagami. Odczyt agenta: v1 to stan początkowy, „3 iteracje” = co najmniej 3 zmiany (v4).
+6. O2: zgłoszenie po błędzie modelu wysłane do mentora nie liczy się do metryk ani do 50 zgłoszeń fazy kalibracji.
 
 ## ⚠️ Pytania otwarte (nieblokujące — przyjęte domyślne)
 
 | Id | Pytanie | Domyślnie w koncepcji | Kto |
 |---|---|---|---|
-| O1 | „30 ocenionych uwag i 3 iteracje promptu”: 30 liczy się łącznie dla wszystkich wersji promptu czy dla ostatniej? Co jest iteracją — każda nowa wersja promptu po v1? | 30 łącznie; iteracja = zapisana wersja promptu po v1 („1 z 3” przy v2); tabela metryk pokazuje rozbicie na wersje | właściciel |
-| O2 | Zgłoszenie po błędzie modelu wysłane do mentora: liczyć do metryk i do 50 zgłoszeń fazy kalibracji? R14 mówi, że każda dodana uwaga to przeoczenie AI, a tu AI nie działało | nie liczyć do żadnego z nich | właściciel |
 | O3 | Uwaga dotycząca całej zmiany (np. architektura) bez konkretnej linii? | linia wymagana (R13); uwaga ogólna przy pierwszej linii pliku | właściciel |
 | O4 | Limit 400 linii, timeout 60 s, tekst „zwykle do minuty” | jak w tekście, do sprawdzenia na golden secie | właściciel (po golden secie) |
 | O5 | Czy mentor może zmienić decyzję po „Zakończ review”? | nie | właściciel |
 | O6 | Pole powodu przy „Odrzuć” (pomogłoby w iteracji promptu)? | brak w MVP, „Później” | właściciel |
 | O7 | Czy zdanie „Część zgłoszeń trafia do mentora losowo” mieści się w R12? | tak — mówi o zasadzie, nie o danym zgłoszeniu | właściciel |
+| O8 | Kryterium 25% i recall: liczyć łącznie dla wszystkich wersji promptu, czy też per wersja jak kryterium precyzji? Per wersja opóźni decyzję o kryterium 2 po każdej zmianie | łącznie dla wszystkich wersji; tabela metryk pokazuje recall dla wybranej wersji | właściciel |
 | Q03 | Płatnik i pochodzenie mentorów (z briefu) | poza MVP | właściciel |
 
 ## 🧪 Granice dowodów
