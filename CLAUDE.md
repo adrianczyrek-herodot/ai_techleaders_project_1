@@ -20,6 +20,6 @@ Katalog `.ai/` jest obowiązkową warstwą pracy AI w tym projekcie:
 Zasady specyficzne dla Claude Code:
 
 - Auto-memory Claude (`~/.claude/projects/.../memory/`) jest prywatna i niewidoczna dla innych agentów. Wnioski dotyczące projektu **MUSISZ** zapisywać w `.ai/lessons/`. W auto-memory zapisuj najwyżej preferencje użytkownika niezwiązane z tym repozytorium.
-- Przy pracy w trybie planowania (plan mode) zapisz zatwierdzony plan jako specyfikację w `.ai/specs/`, zanim zaczniesz implementację.
+- Przy pracy w trybie planowania (plan mode) zapisz zatwierdzony plan jako specyfikację w `.ai/specs/`, zanim zaczniesz implementację. Złożone zadania zaczynaj w plan mode i wracaj do niego, gdy realizacja zbacza z planu (`AGENTS.md`, sekcja 5).
 - Subagent lub zadanie cezar z własnym zleceniem to przebieg autonomiczny, więc zakłada własny log w `.ai/runs/`.
 - Przed zakończeniem zadania przejdź checklistę z sekcji „Na koniec zadania” w `AGENTS.md`.

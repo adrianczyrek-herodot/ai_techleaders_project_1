@@ -114,6 +114,8 @@ branch: <gałąź>
 
 Nie zapisuj tego, co wynika wprost z kodu, historii gita lub specyfikacji.
 
+Wniosek zapisuj od razu po poprawce, w tym samym commicie, a nie na koniec zadania. Formułuj go jako regułę na przyszłość („rób X, bo Y”), a nie opis tego, co się zepsuło. Jeśli ten sam błąd wraca mimo wpisu, zaproponuj użytkownikowi przeniesienie reguły do `AGENTS.md`.
+
 Jak zapisać wniosek:
 
 1. Sprawdź `.ai/lessons.md`. Jeśli temat już jest opisany, zaktualizuj istniejący wpis zamiast tworzyć duplikat. Wpis, który okazał się błędny, popraw albo usuń.
@@ -136,10 +138,29 @@ source: <run / spec / commit / rozmowa>
 ## Jak stosować — co robić następnym razem
 ```
 
-### 5. Na koniec zadania
+### 5. Planowanie i realizacja
+
+- Złożone zadanie (kilka plików, niejasny zakres, zmiana zachowania) **MUSISZ** zacząć od planu: cel, zmieniane pliki, kolejne kroki i sposób weryfikacji. Plan jest częścią specyfikacji z sekcji 2. Implementację zaczynaj dopiero, gdy plan jest na tyle konkretny, że da się go wykonać bez zgadywania.
+- Gdy realizacja zbacza z planu (nieprzewidziany problem, druga nieudana próba tej samej poprawki), zatrzymaj się i zaplanuj od nowa. Nie przepychaj rozwiązania na siłę.
+- Niejasności w zleceniu rozstrzygaj przed pisaniem kodu: pytaniem do użytkownika albo jawnym założeniem w specyfikacji.
+- Przy ważnej zmianie możesz zlecić przegląd planu lub diffu osobnemu agentowi (subagent, zadanie cezar typu review). Świeże spojrzenie wyłapuje więcej niż przegląd własnej pracy.
+- Niezależne części pracy możesz zrównoleglić (osobne worktree, subagenci), ale tylko przy rozłącznym zakresie plików. Szerokie wyszukiwanie zlecaj subagentowi, żeby nie zaśmiecać głównego kontekstu.
+- Po działającej, ale nieeleganckiej poprawce rozważ jej przepisanie z wiedzą, którą masz teraz, zamiast dokładać kolejne łaty.
+- Czynność powtarzaną w wielu zadaniach zamień w skrypt lub skill zapisany w repozytorium (np. jak `.ai/qa/scripts/`).
+
+### 6. Weryfikacja zmian
+
+- Każda zmiana **MUSI** mieć sposób sprawdzenia, zaplanowany przed implementacją: testy, polecenie, skrypt lub sprawdzenie w przeglądarce. Bez weryfikacji zadanie nie jest skończone.
+- Uruchom weryfikację sam i oprzyj się na jej wyniku, nie na przekonaniu, że „powinno działać”. Do prototypów HTML i UI używaj Playwrighta z `.ai/qa/` (zob. `.ai/browsers/playwright.md`).
+- Błąd najpierw odtwórz (test, log, zrzut ekranu), potem napraw i potwierdź tym samym sprawdzeniem, że zniknął.
+- Przed oddaniem przejrzyj własny diff jak recenzent: przypadki brzegowe, zmiany poza zakresem, zgodność ze specyfikacją.
+- W raporcie i logu podawaj, co dokładnie uruchomiono i z jakim wynikiem. To, czego nie dało się sprawdzić, wpisz wprost jako niezweryfikowane.
+
+### 7. Na koniec zadania
 
 Zanim uznasz zadanie za zakończone, sprawdź:
 
+- [ ] weryfikacja z sekcji 6 została uruchomiona, a jej wynik jest zapisany w logu lub raporcie;
 - [ ] specyfikacja ma aktualny status, a wdrożona lub porzucona jest przeniesiona do `implemented/` lub `archive/`;
 - [ ] log przebiegu w `.ai/runs/` jest kompletny (przy pracy autonomicznej);
 - [ ] nowe wnioski są zapisane w `.ai/lessons/` i dopisane do indeksu `.ai/lessons.md`;

@@ -8,6 +8,8 @@ Format wpisu: `- [Tytuł](lessons/YYYY-MM-DD-slug.md) — jedno zdanie: kiedy to
 
 ## Narzędzia i środowisko
 
+- [WebFetch bywa zablokowany w zadaniach cezar](lessons/2026-10-20-webfetch-zablokowany-w-cezar.md) — gdy trzeba pobrać publiczną stronę w headless cezar: użyj `curl`.
+
 ## Proces i współpraca z użytkownikiem
 
 ## Produkt i domena
